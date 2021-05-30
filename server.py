@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import socket
 
 
@@ -23,19 +24,39 @@ try:
             continue
 
         path = request_head[1]
+        # print(path)
+        # print(path, os.path.exists('.' + path))
 
-        head = ''
-        body = ''
+        head = ''.encode('utf-8')
+        body = ''.encode('utf-8')
         if path == r'/':
-            head = 'HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\n\n'
-            with open('index.html', 'r') as f:
-                body = f.read()
-        else:
-            head = 'HTTP/1.1 404 NotFound\nContent-Type: text/html; charset=utf-8\n\n'
-            body = 'Сори, но страница не найдена'
+            head = b'HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\n\n'
+            with open('./static/html/index.html', 'r') as f:
+                body = f.read().encode('utf-8')
+        elif path == r'/static/css/style.css':
+            head = b'HTTP/1.1 200 OK\nContent-Type: text/css; charset=utf-8\n\n'
+            with open('./static/css/style.css', 'r') as f:
+                body = f.read().encode('utf-8')
+        elif path == r'/static/img/logo/logo_black.png':
+            with open('./static/img/logo/logo_black.png', 'rb') as f:
+                img = f.read()
 
-        responce = ''.join([head, body])
-        client.send(responce.encode('utf-8'))
+            head = 'HTTP/1.1 200 OK\n' \
+                   'Content-Type: image/png\n' \
+                   'Accept-Ranges: bytes\n' \
+                   f'Content-length: {len(img)}\n' \
+                   f'Location: https://localhost:8000/static/img/logo/logo_black.png\n\n'
+            head = head.encode('utf-8')
+            body = img
+        else:
+            head = 'HTTP/1.1 404 NotFound\nContent-Type: text/html; charset=utf-8\n\n' \
+                .encode('utf-8')
+            body = 'Сори, но страница не найдена'.encode('utf-8')
+
+        # responce = ''.join([head, body])
+        # client.send(responce.encode('utf-8'))
+        client.send(head)
+        client.send(body)
 
         client.shutdown(socket.SHUT_RDWR)
         client.close()
