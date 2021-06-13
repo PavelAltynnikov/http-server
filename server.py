@@ -71,7 +71,7 @@ def generate_responce(path: str) -> bytes:
 
                 headers += 'Accept-Ranges: bytes\n' \
                            f'Content-length: {len(img)}\n' \
-                           f'Location: https://localhost:8000{path}\n'.encode('utf-8')
+                           f'Location: https://{HOST}:{PORT}{path}\n'.encode('utf-8')
                 body = img
     else:
         starting_line += b'404 NotFound\n'
@@ -85,27 +85,28 @@ def generate_responce(path: str) -> bytes:
 
 try:
     while True:
-        client, address = server_sock.accept()
+        try:
+            client, address = server_sock.accept()
 
-        request = client.recv(1024).decode('utf-8').strip().split('\r\n')
+            request = client.recv(1024).decode('utf-8').strip().split('\r\n')
 
-        starting_line = request[0].split()
-        http_method, path, protocol = starting_line
-        headers = {line.split(': ')[0]: line.split(': ')[1] for line in request[1:]}
+            starting_line = request[0].split()
+            http_method, path, protocol = starting_line
+            headers = {line.split(': ')[0]: line.split(': ')[1] for line in request[1:]}
 
-        # print_request(http_method, path, protocol, headers)
-        print(path)
+            # print_request(http_method, path, protocol, headers)
+            print(path)
 
-        if http_method != 'GET':
+            if http_method != 'GET':
+                client.shutdown(socket.SHUT_RDWR)
+                client.close()
+                continue
+
+            client.send(generate_responce(path))
             client.shutdown(socket.SHUT_RDWR)
             client.close()
-            continue
-
-        client.send(generate_responce(path))
-        client.shutdown(socket.SHUT_RDWR)
-        client.close()
-except Exception as e:
-    print(e)
+        except Exception as e:
+            print(e)
 except KeyboardInterrupt:
     print('Сервер отключён')
     server_sock.close()
