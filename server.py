@@ -4,7 +4,10 @@ import socket
 
 
 HOST = 'localhost'
-PORT = 8080
+# HOST = "172.28.0.1"
+# HOST = "0.0.0.0"
+# HOST = "25.74.64.44"
+PORT = 8000
 
 server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1024)
@@ -102,5 +105,7 @@ try:
         client.shutdown(socket.SHUT_RDWR)
         client.close()
 except Exception as e:
-    print(f'Сервер отключен, причина: {e}')
+    print(e)
+except KeyboardInterrupt:
+    print('Сервер отключён')
     server_sock.close()
